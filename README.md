@@ -42,7 +42,7 @@ LendFlow is based on the public **LoanSphere** academic project by [Aadhinath552
 
 ## Setup
 1. `npm run install:all`
-2. Copy `server/.env.example` to `server/.env`, then set your `MONGO_URI`, a random `JWT_SECRET` (24+ characters) and your own `SEED_ADMIN_PASSWORD`.
+2. `npm run setup` — asks for your MongoDB connection string and an admin email/password, writes `server/.env` (with a random `JWT_SECRET`) and tests the database connection. You can also copy `server/.env.example` to `server/.env` and edit it by hand.
 3. `npm run seed` — creates the admin user plus 2,500 synthetic customers and loans. Every run adds another batch. Pass a count with `npm run seed --prefix server -- 5000`.
 4. `npm run dev`
 5. Open http://localhost:5173 and sign in with the admin email and password from `server/.env`.
