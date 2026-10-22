@@ -1,0 +1,13 @@
+import mongoose from 'mongoose';
+const {Schema,model}=mongoose;
+const opts={timestamps:true};
+export const User=model('User',new Schema({name:{type:String,required:true},email:{type:String,unique:true,lowercase:true,required:true},passwordHash:{type:String,required:true},role:{type:String,enum:['admin','officer'],default:'officer'}},opts));
+export const Customer=model('Customer',new Schema({name:{type:String,required:true},email:{type:String,required:true,lowercase:true},phone:String,city:String,monthlyIncome:{type:Number,min:0,required:true},existingEMI:{type:Number,min:0,default:0},creditScore:{type:Number,min:300,max:900,default:650},employment:{type:String,default:'Salaried'}},opts));
+const installment=new Schema({installment:Number,dueDate:Date,amount:Number,principal:Number,interest:Number,balance:Number,status:{type:String,enum:['pending','paid'],default:'pending'},paidAt:Date},{_id:false});
+const loanSchema=new Schema({customer:{type:Schema.Types.ObjectId,ref:'Customer',required:true},type:{type:String,enum:['Personal','Home','Vehicle','Education','Business'],required:true},principal:{type:Number,min:1,required:true},annualRate:{type:Number,min:0,max:100,required:true},months:{type:Number,min:1,max:360,required:true},emi:{type:Number,required:true},status:{type:String,enum:['pending','approved','rejected','closed'],default:'pending'},risk:{type:String,enum:['Low','Medium','High']},dti:Number,notes:String,approvedAt:Date,installments:[installment],totalPaid:{type:Number,default:0}},opts);
+loanSchema.index({status:1,createdAt:-1});loanSchema.index({customer:1,createdAt:-1});loanSchema.index({type:1,status:1});
+export const Loan=model('Loan',loanSchema);
+export const Repayment=model('Repayment',new Schema({loan:{type:Schema.Types.ObjectId,ref:'Loan',required:true},installment:{type:Number,required:true},amount:{type:Number,required:true},paidAt:{type:Date,default:Date.now},recordedBy:{type:Schema.Types.ObjectId,ref:'User'}},opts));
+Repayment.schema.index({loan:1,installment:1},{unique:true});
+export const ImportJob=model('ImportJob',new Schema({filename:String,processed:Number,inserted:Number,rejected:Number,errors:[String],createdBy:{type:Schema.Types.ObjectId,ref:'User'}},opts));
+export const AuditLog=model('AuditLog',new Schema({actor:{type:Schema.Types.ObjectId,ref:'User'},action:String,entity:String,entityId:String,detail:String},opts));
