@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {AreaChart, Area, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend} from 'recharts';
 import {Landmark, Wallet, CheckCircle2, Coins, Clock, Plus, Search, Download, Upload, Activity, Trash2, Pencil, Eye, AlertTriangle} from 'lucide-react';
-import {api, download, useData, useDebounced, usePalette, currency, compact, fmtDate, LOAN_TYPES, LOAN_STATUSES, APP_NAME} from './lib.js';
-import {Loading, Stat, Panel, Modal, Tag, Field, Pagination, ChartBar, Table, Empty, riskTone, statusTone, scoreTone} from './components.jsx';
+import {api, download, useData, useDebounced, usePalette, currency, compact, fmtDate, LOAN_TYPES, LOAN_STATUSES, APP_NAME, DEMO} from './lib.js';
+import {Loading, Stat, Panel, Modal, Tag, Field, Pagination, ChartBar, Table, Empty, riskTone, statusTone, scoreTone, confirmAction} from './components.jsx';
 
 export function Overview({go}) {
   const {data, error, loading} = useData('/analytics/overview');
@@ -140,15 +140,15 @@ export function Customers({run, busy, refresh, admin, notify}) {
       notify(editing ? 'Customer updated' : 'Customer added', 'success');
     });
   }
-  function remove(c) {
-    if (!confirm(`Delete ${c.name}? This cannot be undone.`)) return;
+  async function remove(c) {
+    if (!await confirmAction(`Delete ${c.name}? This cannot be undone.`, 'Delete customer', true)) return;
     run(async () => { await api('/customers/' + c._id, {method: 'DELETE'}); notify('Customer deleted', 'success'); });
   }
   return <>
     <div className="toolbar">
       <div className="searchbox"><Search size={16}/><input placeholder="Search by name or email" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/></div>
       <div className="toolbar-actions">
-        <button className="secondary" onClick={() => run(() => download('/export/customers', 'lendflow-customers.csv'))}><Download size={16}/> Export CSV</button>
+        {!DEMO && <button className="secondary" onClick={() => run(() => download('/export/customers', 'lendflow-customers.csv'))}><Download size={16}/> Export CSV</button>}
         <button className="primary" onClick={() => setForm({})}><Plus size={16}/> Add customer</button>
       </div>
     </div>
@@ -247,8 +247,8 @@ export function Loans({run, busy, refresh, admin, notify}) {
     obj.months = Number(obj.months);
     run(async () => { await api('/loans', {method: 'POST', body: JSON.stringify(obj)}); setOpen(false); notify('Application submitted', 'success'); });
   }
-  function decide(id, s) {
-    if (!confirm(`Mark this application as ${s}?`)) return;
+  async function decide(id, s) {
+    if (!await confirmAction(`Mark this application as ${s}?`, s === 'approved' ? 'Approve' : 'Reject', s === 'rejected')) return;
     run(async () => { await api('/loans/' + id + '/status', {method: 'PATCH', body: JSON.stringify({status: s})}); notify('Application ' + s, 'success'); });
   }
   return <>
@@ -261,7 +261,7 @@ export function Loans({run, busy, refresh, admin, notify}) {
         </select>
       </div>
       <div className="toolbar-actions">
-        <button className="secondary" onClick={() => run(() => download('/export/loans', 'lendflow-loans.csv'))}><Download size={16}/> Export CSV</button>
+        {!DEMO && <button className="secondary" onClick={() => run(() => download('/export/loans', 'lendflow-loans.csv'))}><Download size={16}/> Export CSV</button>}
         <button className="primary" onClick={() => setOpen(true)}><Plus size={16}/> New application</button>
       </div>
     </div>
@@ -339,9 +339,9 @@ export function Repayments({run, refresh, notify}) {
   const [id, setId] = useState('');
   const [installment, setInstallment] = useState('');
   const detail = useData(id ? '/loans/' + id : null, [refresh]);
-  function pay() {
+  async function pay() {
     const selected = detail.data?.installments?.find(i => i.installment === Number(installment));
-    if (!selected || !confirm(`Record payment of ${currency(selected.amount)} for installment #${installment}?`)) return;
+    if (!selected || !await confirmAction(`Record payment of ${currency(selected.amount)} for installment #${installment}?`, 'Record payment')) return;
     run(async () => {
       await api('/loans/' + id + '/repayments', {method: 'POST', body: JSON.stringify({installment: Number(installment)})});
       setInstallment('');
@@ -481,7 +481,7 @@ export function Reports() {
   return (
     <Loading {...{error, loading}}>
       {data && (
-        <Panel title="Executive summary" sub={'Generated ' + new Date(data.generatedAt).toLocaleString('en-IN')} action={<button className="secondary" onClick={() => window.print()}><Download size={16}/> Print / Save PDF</button>}>
+        <Panel title="Executive summary" sub={'Generated ' + new Date(data.generatedAt).toLocaleString('en-IN')} action={!DEMO && <button className="secondary" onClick={() => window.print()}><Download size={16}/> Print / Save PDF</button>}>
           <div className="report">
             <div className="report-title"><div className="brand-mark"><Landmark size={22}/></div><div><h2>{APP_NAME}</h2><p className="muted">Executive portfolio report</p></div></div>
             <div className="stats three">

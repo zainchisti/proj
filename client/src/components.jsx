@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {X, Inbox} from 'lucide-react';
 import {usePalette} from './lib.js';
@@ -117,5 +117,27 @@ export function Table({columns, rows, rowKey, onRowClick, empty}) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+// In-app replacement for window.confirm(), which embedded pages may block.
+let openConfirm = null;
+export function confirmAction(message, label = 'Confirm', danger = false) {
+  return new Promise(resolve => (openConfirm ? openConfirm({message, label, danger, resolve}) : resolve(window.confirm(message))));
+}
+
+export function ConfirmHost() {
+  const [request, setRequest] = useState(null);
+  useEffect(() => { openConfirm = setRequest; return () => { openConfirm = null; }; }, []);
+  if (!request) return null;
+  const close = ok => { request.resolve(ok); setRequest(null); };
+  return (
+    <Modal title="Please confirm" onClose={() => close(false)}>
+      <p className="confirm-text">{request.message}</p>
+      <div className="confirm-actions">
+        <button className="secondary" onClick={() => close(false)}>Cancel</button>
+        <button className={'primary' + (request.danger ? ' danger' : '')} onClick={() => close(true)} autoFocus>{request.label}</button>
+      </div>
+    </Modal>
   );
 }

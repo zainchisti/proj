@@ -305,6 +305,14 @@ td small { display: flex; align-items: center; gap: 4px; color: var(--muted); ma
 .spinner { width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--brand); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ---------- Confirm & demo ---------- */
+.confirm-text { color: var(--text-2); line-height: 1.6; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.primary.danger { background: var(--red); box-shadow: none; }
+.demo-note { background: var(--amber-soft); color: var(--text-2); border-radius: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.6; }
+.demo-note b { color: var(--text); }
+.demo-pill { background: var(--amber-soft); color: var(--amber); font-size: 11px; font-weight: 800; padding: 6px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .06em; }
+
 /* ---------- Login ---------- */
 .login { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
 .login-art {

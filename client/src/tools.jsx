@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend} from 'recharts';
 import {CheckCircle2, AlertTriangle, Phone, Plus, Download, KeyRound} from 'lucide-react';
-import {api, useData, useDebounced, usePalette, currency, fmtDate} from './lib.js';
-import {Loading, Panel, Modal, Tag, Field, Table} from './components.jsx';
+import {api, useData, useDebounced, usePalette, currency, fmtDate, DEMO} from './lib.js';
+import {resetDemo} from './mock.js';
+import {Loading, Panel, Modal, Tag, Field, Table, confirmAction} from './components.jsx';
 
 function usePost(path, body) {
   const [state, setState] = useState({data: null, error: ''});
@@ -80,7 +81,7 @@ function EMITool() {
       </Panel>
     </div>
     {data && (
-      <Panel title="Amortization schedule" action={<button className="secondary" onClick={exportSchedule}><Download size={16}/> Download CSV</button>}>
+      <Panel title="Amortization schedule" action={!DEMO && <button className="secondary" onClick={exportSchedule}><Download size={16}/> Download CSV</button>}>
         <div className="scroll-box">
           <Table rows={data.schedule} rowKey={i => i.installment} columns={[
             {label: '#', render: i => i.installment},
@@ -257,6 +258,7 @@ export function Settings({user, theme, toggleTheme, run, busy, notify}) {
         </div>
         <div className="kv">
           <p>Appearance <button className="secondary" onClick={toggleTheme}>{theme === 'dark' ? 'Switch to light' : 'Switch to dark'}</button></p>
+          {DEMO && <p>Demo data <button className="secondary" onClick={async () => { if (await confirmAction('Reset all demo data to the original sample? Your changes will be lost.', 'Reset data', true)) run(async () => { resetDemo(); notify('Demo data reset', 'success'); }); }}>Reset sample data</button></p>}
         </div>
       </Panel>
       <Panel title="Change password" sub="At least 10 characters">

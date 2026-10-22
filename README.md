@@ -35,6 +35,15 @@ LendFlow is based on the public **LoanSphere** academic project by [Aadhinath552
 - EMI calculator with sliders, debounced search, loan product filter, and automatic sign-out when a session expires.
 - Added the missing `server/.env.example`, unit tests for the new calculations, and removed a self-referencing dependency from the `package.json` files.
 
+## Quick demo (no database needed)
+```bash
+npm run install:all
+npm run demo
+```
+Open http://localhost:5173 and sign in with `admin@lendflow.local` / `demo12345`. Demo mode uses about 300 synthetic customers and loans that are generated and stored in your browser, so MongoDB is not required. **Reset sample data** on the Settings page restores the original data. `npm run build:demo` packs the demo into a single HTML file at `client/dist-demo/lendflow-demo.html`.
+
+For the full app with a real database, follow the steps below.
+
 ## Prerequisites
 - Node.js 20+ and npm
 - MongoDB running locally on port 27017, **or** a MongoDB Atlas connection string

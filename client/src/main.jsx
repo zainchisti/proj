@@ -1,7 +1,8 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {LayoutDashboard, Users, Landmark, Calculator, Wallet, BarChart3, Database, Upload, FileText, Activity, LogOut, Menu, ShieldCheck, Clock, UserCog, Settings as SettingsIcon, Moon, Sun, TrendingUp, Zap, Lock} from 'lucide-react';
-import {api, storage, APP_NAME, PALETTES, ThemeContext} from './lib.js';
+import {api, storage, APP_NAME, PALETTES, ThemeContext, DEMO} from './lib.js';
+import {ConfirmHost} from './components.jsx';
 import {Overview, Customers, Loans, Repayments, Analytics, DataImport, QueryLab, Reports, Audit} from './pages.jsx';
 import {LoanTools, Collections, Team, Settings} from './tools.jsx';
 import './style.css';
@@ -33,6 +34,8 @@ const NAV = [
 function initialTheme() {
   const saved = storage.get('lf_theme');
   if (saved === 'light' || saved === 'dark') return saved;
+  const host = document.documentElement.dataset.theme;
+  if (host === 'light' || host === 'dark') return host;
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
@@ -54,7 +57,12 @@ function App() {
   }, []);
 
   const themeValue = useMemo(() => ({theme, palette: PALETTES[theme], toggle: () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}), [theme]);
-  const notify = (message, tone = 'error') => { setToast({message, tone}); setTimeout(() => setToast(null), 4000); };
+  const toastTimer = useRef(null);
+  const notify = (message, tone = 'error') => {
+    clearTimeout(toastTimer.current);
+    setToast({message, tone});
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
+  };
   const run = async fn => {
     setBusy(true);
     try { await fn(); setRefresh(x => x + 1); } catch (e) { notify(e.message); } finally { setBusy(false); }
@@ -122,6 +130,7 @@ function App() {
               <p>{current.sub}</p>
             </div>
             <div className="topbar-right">
+              {DEMO && <span className="demo-pill">Demo data</span>}
               <span className="date">{new Date().toLocaleDateString('en-IN', {weekday: 'short', day: 'numeric', month: 'short'})}</span>
               <button className="icon-btn bordered" onClick={themeValue.toggle} title="Toggle theme" aria-label="Toggle theme">{theme === 'dark' ? <Sun size={18}/> : <Moon size={18}/>}</button>
             </div>
@@ -129,6 +138,7 @@ function App() {
           <div className="content" key={current.name}>{pages[current.name]}</div>
         </main>
         {toast && <div className={'toast ' + toast.tone}>{toast.message}</div>}
+        <ConfirmHost/>
       </div>
     </ThemeContext.Provider>
   );
@@ -145,7 +155,7 @@ function Brand() {
 
 function Login({onLogin, theme, toggleTheme}) {
   const [email, setEmail] = useState('admin@lendflow.local');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEMO ? 'demo12345' : '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   async function submit(e) {
@@ -189,7 +199,9 @@ function Login({onLogin, theme, toggleTheme}) {
           <label>Password<input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" autoComplete="current-password"/></label>
           {error && <div className="error">{error}</div>}
           <button className="primary full" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</button>
-          <small className="muted center">Admin credentials are set in server/.env before seeding.</small>
+          {DEMO
+            ? <div className="demo-note"><b>Online demo.</b> Sample data is kept in this browser. Admin: admin@lendflow.local · Officer: officer@lendflow.local · Password: demo12345</div>
+            : <small className="muted center">Admin credentials are set in server/.env before seeding.</small>}
         </form>
       </div>
     </div>

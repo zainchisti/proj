@@ -1,4 +1,8 @@
 import {createContext, useContext, useEffect, useState} from 'react';
+import * as mock from './mock.js';
+
+// Demo build: no backend, the API is served from the browser (see mock.js).
+export const DEMO = import.meta.env.VITE_DEMO === '1';
 
 export const APP_NAME = 'LendFlow';
 export const LOAN_TYPES = ['Personal', 'Home', 'Vehicle', 'Education', 'Business'];
@@ -24,6 +28,12 @@ const storage = {
 export {storage};
 
 export async function api(path, options = {}) {
+  if (DEMO) {
+    try { return await mock.handle(path, options); } catch (e) {
+      if (e.status === 401 && path !== '/auth/login') window.dispatchEvent(new Event('lf:logout'));
+      throw e;
+    }
+  }
   const token = storage.get('lf_token');
   const res = await fetch('/api' + path, {
     ...options,
