@@ -85,6 +85,9 @@ export function Pagination({page, total, setPage, size = 20}) {
   );
 }
 
+// Large values (rupee totals) are shortened to lakh/crore so axis labels fit.
+const axisNumber = v => (Math.abs(v) >= 100000 ? Intl.NumberFormat('en-IN', {notation: 'compact', maximumFractionDigits: 1}).format(v) : v.toLocaleString('en-IN'));
+
 export function ChartBar({data, x = 'name', y = 'value', color = 0, height}) {
   const p = usePalette();
   return (
@@ -93,8 +96,8 @@ export function ChartBar({data, x = 'name', y = 'value', color = 0, height}) {
         <BarChart data={data}>
           <CartesianGrid stroke={p.grid} vertical={false}/>
           <XAxis dataKey={x} stroke={p.axis} tick={{fontSize: 11}} tickLine={false} axisLine={false}/>
-          <YAxis stroke={p.axis} tick={{fontSize: 11}} tickLine={false} axisLine={false}/>
-          <Tooltip contentStyle={p.tooltip} cursor={{fill: p.grid, opacity: 0.5}}/>
+          <YAxis stroke={p.axis} tick={{fontSize: 11}} tickLine={false} axisLine={false} tickFormatter={axisNumber} width={48}/>
+          <Tooltip contentStyle={p.tooltip} cursor={{fill: p.grid, opacity: 0.5}} formatter={v => v.toLocaleString('en-IN')}/>
           <Bar dataKey={y} fill={p.series[color % p.series.length]} radius={[6, 6, 0, 0]} maxBarSize={44}/>
         </BarChart>
       </ResponsiveContainer>
