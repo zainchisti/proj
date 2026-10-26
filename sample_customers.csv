@@ -1,0 +1,4 @@
+name,email,phone,city,monthlyIncome,existingEMI,creditScore,employment
+Ananya Demo,ananya@example.test,9000000001,Bengaluru,85000,6000,780,Salaried
+Rahul Demo,rahul@example.test,9000000002,Mumbai,65000,9000,710,Self-employed
+Meera Demo,meera@example.test,9000000003,Kochi,92000,5000,825,Business
